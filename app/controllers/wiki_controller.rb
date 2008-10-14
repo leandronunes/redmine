@@ -52,14 +52,16 @@ class WikiController < ApplicationController
       send_data(@content.text, :type => 'text/plain', :filename => "#{@page.title}.txt")
       return
     end
-	@editable = editable?
+    @editable = editable?
     render :action => 'show'
   end
   
   # edit an existing page or a new one
   def edit
-    @page = @wiki.find_or_new_page(params[:page])    
+    @page = @wiki.find_or_new_page(params[:page])
+    @page.parent_title = params[:parent] if params[:parent]
     return render_403 unless editable?
+
     @page.content = WikiContent.new(:page => @page) if @page.new_record?
     
     @content = @page.content_for_version(params[:version])
@@ -70,19 +72,11 @@ class WikiController < ApplicationController
       # To prevent StaleObjectError exception when reverting to a previous version
       @content.version = @page.content.version
     else
-      if !@page.new_record? && @content.text == params[:content][:text]
-        # don't save if text wasn't changed
-        redirect_to :action => 'index', :id => @project, :page => @page.title
-        return
-      end
-      #@content.text = params[:content][:text]
-      #@content.comments = params[:content][:comments]
       @content.attributes = params[:content]
       @content.author = User.current
-      # if page is new @page.save will also save content, but not if page isn't a new record
-      if (@page.new_record? ? @page.save : @content.save)
-        redirect_to :action => 'index', :id => @project, :page => @page.title
-      end
+      @page.save if @page.changed?
+      @content.save if @content.changed?
+      redirect_to :action => 'index', :id => @project, :page => @page.title
     end
   rescue ActiveRecord::StaleObjectError
     # Optimistic locking exception

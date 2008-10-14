@@ -197,7 +197,8 @@ module ApplicationHelper
   
   def breadcrumb(*args)
     elements = args.flatten
-    elements.any? ? content_tag('p', args.join(' &#187; ') + ' &#187; ', :class => 'breadcrumb') : nil
+    last_element = elements.pop
+    last_element.nil? ? nil : content_tag('p', elements.join(' &#187; ') + ' &#187; ' + last_element, :class => 'breadcrumb')
   end
   
   def html_title(*args)
@@ -260,7 +261,6 @@ module ApplicationHelper
     text = (Setting.text_formatting == 'textile') ?
       Redmine::WikiFormatting.to_html(text) { |macro, args| exec_macro(macro, obj, args) } :
       simple_format(auto_link(h(text)))
-
     # different methods for formatting wiki links
     case options[:wiki_links]
     when :local
@@ -270,7 +270,7 @@ module ApplicationHelper
       # used for single-file wiki export
       format_wiki_link = Proc.new {|project, title, anchor| "##{title}" }
     else
-      format_wiki_link = Proc.new {|project, title, anchor| url_for(:only_path => only_path, :controller => 'wiki', :action => 'index', :id => project, :page => title, :anchor => anchor) }
+      format_wiki_link = Proc.new {|project, title, anchor, parent| url_for(:only_path => only_path, :controller => 'wiki', :action => 'index', :id => project, :page => title, :anchor => anchor, :parent => parent && parent.title) }
     end
     
     project = options[:project] || @project || (obj && obj.respond_to?(:project) ? obj.project : nil)
@@ -303,7 +303,7 @@ module ApplicationHelper
           end
           # check if page exists
           wiki_page = link_project.wiki.find_page(page)
-          link_to((title || page), format_wiki_link.call(link_project, Wiki.titleize(page), anchor),
+          link_to((title || page), format_wiki_link.call(link_project, Wiki.titleize(page), anchor, obj && obj.page),
                                    :class => ('wiki-page' + (wiki_page ? '' : ' new')))
         else
           # project or wiki doesn't exist

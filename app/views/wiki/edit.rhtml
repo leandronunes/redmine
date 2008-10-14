@@ -1,3 +1,5 @@
+<%= breadcrumb(@page.ancestors.reverse.push(@page).collect {|parent| link_to h(parent.pretty_title), {:page => parent.title}}) %>
+
 <h2><%= @page.pretty_title %></h2>
 
 <% form_for :content, @content, :url => {:action => 'edit', :page => @page.title}, :html => {:id => 'wiki_form'} do |f| %>
@@ -6,6 +8,7 @@
 
 <p><%= f.text_area :text, :cols => 100, :rows => 25, :class => 'wiki-edit', :accesskey => accesskey(:edit) %></p>
 <p><label><%= l(:field_comments) %></label><br /><%= f.text_field :comments, :size => 120 %></p>
+<p><label><%= l(:field_parent_title) %></label><br /><%= select_tag 'parent', options_for_select(@wiki.pages.collect{|page| [page.pretty_title,page.title]}, @page.parent_title) %></p>
 <p><%= submit_tag l(:button_save) %>
    <%= link_to_remote l(:label_preview), 
                        { :url => { :controller => 'wiki', :action => 'preview', :id => @project, :page => @page.title },

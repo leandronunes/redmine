@@ -113,13 +113,18 @@ class WikiPage < ActiveRecord::Base
   end
   
   def parent_title
-    @parent_title || (self.parent && self.parent.pretty_title)
+    @parent_title || (self.parent && self.parent.title)
   end
   
   def parent_title=(t)
+    return self.parent if (self.parent && (self.parent.title == t))
     @parent_title = t
     parent_page = t.blank? ? nil : self.wiki.find_page(t)
     self.parent = parent_page
+  end
+
+  def parent_pretty_title
+    @parent_pretty_title || (self.parent && self.parent.pretty_title)
   end
   
   protected

@@ -6,7 +6,7 @@
 <div class="box">
 <p><%= f.text_field :title, :required => true, :size => 100  %></p>
 <p><%= f.check_box :redirect_existing_links %></p>
-<p><%= f.text_field :parent_title, :size => 100  %></p>
+<p><%= f.select :parent_title, @wiki.pages.collect{|page| [page.pretty_title,page.title]} %></p>
 </div>
 <%= submit_tag l(:button_rename) %>
 <% end %>

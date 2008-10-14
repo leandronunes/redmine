@@ -53,8 +53,16 @@ class WikiPageTest < Test::Unit::TestCase
     assert_nil page.parent_title
     
     page = WikiPage.find_by_title('Page_with_an_inline_image')
-    assert_equal 'CookBook documentation', page.parent_title
+    assert_equal 'CookBook_documentation', page.parent_title
   end
+
+  def test_parent_pretty_title
+    page = WikiPage.find_by_title('Another_page')
+    assert_nil page.parent_title
+    
+    page = WikiPage.find_by_title('Page_with_an_inline_image')
+    assert_equal 'CookBook documentation', page.parent_pretty_title
+  end  
   
   def test_assign_parent
     page = WikiPage.find_by_title('Another_page')
